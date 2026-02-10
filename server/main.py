@@ -3,7 +3,7 @@ from fastapi import FastAPI
 import uvicorn
 
 MainApp = FastAPI()
-MainApp.mount("/click", app)
+MainApp.mount("/control", app)
 
 
 if __name__ == "__main__":
