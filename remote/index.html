@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pi Remote</title>
+    <style>
+        body {
+            background-color: #121212; /* Dark Mode */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            touch-action: manipulation; /* Disables double-tap zoom */
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 100px 100px 100px;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #333;
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1a1a1a;
+            transition: transform 0.1s, box-shadow 0.1s;
+            /* Prevent text selection on rapid tapping */
+            user-select: none;
+            -webkit-user-select: none; 
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1a1a1a;
+            background-color: #555;
+        }
+
+        .up { grid-column: 2; grid-row: 1; }
+        .left { grid-column: 1; grid-row: 2; }
+        .enter { grid-column: 2; grid-row: 2; background-color: #E50914; } /* Netflix Red */
+        .right { grid-column: 3; grid-row: 2; }
+        .down { grid-column: 2; grid-row: 3; }
+
+    </style>
+</head>
+<body>
+
+    <div class="d-pad">
+        <button class="up" onclick="send('up')">▲</button>
+        <button class="left" onclick="send('left')">◀</button>
+        <button class="enter" onclick="send('enter')">OK</button>
+        <button class="right" onclick="send('right')">▶</button>
+        <button class="down" onclick="send('down')">▼</button>
+    </div>
+
+    <script>
+        // The magic function
+        async function send(key) {
+            // We send to /api/key, and Nginx forwards it to localhost:8000/key
+            try {
+                await fetch(`/api/click/${key}`, { method: 'POST' });
+                // Optional: Vibration feedback for the phone
+                if (navigator.vibrate) navigator.vibrate(50);
+            } catch (error) {
+                console.error("Connection failed", error);
+            }
+        }
+    </script>
+</body>
+</html>
