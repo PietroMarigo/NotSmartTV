@@ -7,4 +7,4 @@ MainApp.mount("/control", app)
 
 
 if __name__ == "__main__":
-    uvicorn.run(MainApp, host="0.0.0.0", log_level="debug")
+    uvicorn.run(MainApp, host="0.0.0.0", port=8001, log_level="debug")

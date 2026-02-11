@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>Pi Remote</title>
+		<link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+	</head>
+	<body>
+		<div class="nav-zone">
+			<button class="back btn-gray" onclick="send('back')">BACK</button>
+			<button class="up" onclick="send('up')">▲</button>
+			<button class="home btn-green" onclick="goHome()">⌂</button>
+
+			<button class="left" onclick="send('left')">◀</button>
+			<button class="enter btn-red" onclick="send('enter')">OK</button>
+			<button class="right" onclick="send('right')">▶</button>
+
+			<div class="spacer"></div>
+			<button class="down" onclick="send('down')">▼</button>
+			<div class="spacer"></div>
+		</div>
+
+		<div class="mouse-zone">
+			<div id="trackpad">TOUCH AREA</div>
+			<div class="mouse-buttons">
+				<button class="mouse-btn" onclick="send('left_click')">L-Click</button>
+				<button class="mouse-btn" onclick="send('right_click')">R-Click</button>
+			</div>
+		</div>
+
+		<script>
+			// --- 1. CONFIGURATION (Fixed with backticks ``) ---
+			const API_BASE = window.location.origin;
+			const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+			const WS_URL = `${WS_PROTOCOL}${window.location.host}/control/ws/mouse`;
+			
+			// --- 2. SEND FUNCTION ---
+			async function send(key) {
+				try {
+					// event is a global object in inline onclicks
+					if(window.event) window.event.preventDefault();
+					// Backticks here too!
+					await fetch(`${API_BASE}/control/key/${key}`, { method: 'POST' });
+					} catch (err) { console.error("Send error:", err); }
+				}
+				
+				async function goHome() {
+					try {
+						if(window.event) window.event.preventDefault();
+						await fetch(`${API_BASE}/control/system/home`, { method: 'POST' });
+						} catch (err) { console.error("Home error:", err); }
+					}
+					
+					// --- 3. WEBSOCKET LOGIC ---
+					let ws;
+					function connect() {
+						ws = new WebSocket(WS_URL);
+						ws.onclose = () => {
+							console.log("Disconnected, retrying...");
+							setTimeout(connect, 1000); // Fixed: actually calls connect
+							};
+							ws.onerror = (err) => console.error("WS Error:", err);
+						}
+						connect();
+						
+						// --- 4. TRACKPAD LOGIC ---
+						let lastX = 0, lastY = 0;
+						const SENSITIVITY = 2.2;
+						const trackpad = document.getElementById('trackpad');
+						
+						trackpad.addEventListener('touchstart', (e) => {
+							lastX = e.touches[0].clientX;
+							lastY = e.touches[0].clientY;
+							}, { passive: false });
+							
+							trackpad.addEventListener('touchmove', (e) => {
+								e.preventDefault();
+								if (!ws || ws.readyState !== WebSocket.OPEN) return;
+								
+								const curX = e.touches[0].clientX;
+								const curY = e.touches[0].clientY;
+								
+								// Fixed: consistency in variable casing
+								const dX = Math.round((curX - lastX) * SENSITIVITY);
+								const dY = Math.round((curY - lastY) * SENSITIVITY);
+								
+								if (dX !== 0 || dY !== 0) {
+									ws.send(`${dX},${dY}`); // Backticks here!
+								}
+								lastX = curX;
+								lastY = curY;
+								}, { passive: false });
+		</script>
+	</body>
+</html>

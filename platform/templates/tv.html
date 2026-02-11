@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Pi TV</title>
+		<link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+	</head>
+	<body>
+
+		<div class="header">
+			<h1>SELECT SOURCE</h1>
+			<div id="clock">00:00</div>
+		</div>
+
+		<div class="app-grid">
+			{% for app in app_list %}
+			{% if app != 'dashboard' %}
+			<div class="card {{ app }}" tabindex="0" data-app="{{ app }}" onclick="launch('{{ app }}')">
+				<span class="label">{{ app }}</span>
+			</div>
+			{% endif %}
+			{% endfor %}
+		</div>
+
+		<script>
+			// --- 1. CLOCK ---
+			// Updates the time every second
+			setInterval(() => {
+				const now = new Date();
+				document.getElementById('clock').innerText =
+				now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+				}, 1000);
+				
+				// --- 2. NAVIGATION LOGIC (The "TV" Feel) ---
+				const cards = Array.from(document.querySelectorAll('.card'));
+				const COLUMNS = 3; // Must match the CSS grid layout
+				
+				// Focus the first app immediately so the remote works instantly
+				if(cards.length > 0) cards[0].focus();
+				
+				document.addEventListener('keydown', (e) => {
+					const current = document.activeElement;
+					const index = cards.indexOf(current);
+					
+					// If focus is lost (e.g. clicked background), reset to first item
+					if (index === -1) {
+						if(cards.length > 0) cards[0].focus();
+						return;
+					}
+					
+					let nextIndex = index;
+					
+					switch(e.key) {
+						case 'ArrowRight':
+						nextIndex = index + 1;
+						break;
+						case 'ArrowLeft':
+						nextIndex = index - 1;
+						break;
+						case 'ArrowDown':
+						nextIndex = index + COLUMNS;
+						break;
+						case 'ArrowUp':
+						nextIndex = index - COLUMNS;
+						break;
+						case 'Enter':
+						launch(current.dataset.app);
+						return; // Stop processing
+						case 'Backspace':
+						case 'Escape':
+						location.reload();
+						return;
+					}
+					
+					// Apply focus if the new index is valid (bounds check)
+					if (nextIndex >= 0 && nextIndex < cards.length) {
+						cards[nextIndex].focus();
+					}
+					});
+					
+					// --- 3. LAUNCHER LOGIC ---
+					async function launch(appName) {
+						console.log("Launching:", appName);
+						
+						// Visual feedback: Opacity drop to show something is happening
+						document.body.style.opacity = "0.5";
+						document.body.style.cursor = "wait";
+						
+						try {
+							// CRITICAL: Matches your main.py mount (/select) + controller route (/launch)
+							const targetUrl = `/select/launch/${appName}`;
+							
+							const res = await fetch(targetUrl, { method: 'POST' });
+							const data = await res.json();
+							console.log("Result:", data);
+							} catch (err) {
+								console.error("Launch failed:", err);
+								alert("Error launching app. Check server logs.");
+								// Reset UI if it failed
+								document.body.style.opacity = "1";
+								document.body.style.cursor = "default";
+							}
+						}
+		</script>
+	</body>
+</html>

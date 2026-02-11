@@ -1,0 +1,74 @@
+/* --- GLOBAL RESET --- */
+body {
+    background-color: #111; /* Deep charcoal, easier on eyes than pure black */
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* No scrollbars on TV */
+}
+
+h1 {
+    font-weight: 300;
+    margin-bottom: 40px;
+    opacity: 0.8;
+    letter-spacing: 2px;
+}
+
+/* --- THE GRID --- */
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 Apps per row */
+    gap: 30px;
+    padding: 40px;
+    width: 80%;
+    max-width: 1200px;
+}
+
+/* --- APP CARDS --- */
+.card {
+    background-color: #222;
+    border-radius: 16px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 4px solid transparent; /* Reserve space for border */
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    outline: none; /* We use border for focus, not default outline */
+}
+
+/* --- FOCUS STATE (The Magic) --- */
+/* This triggers when you Arrow-Key onto a card */
+.card:focus {
+    transform: scale(1.1); /* Pop out effect */
+    background-color: #eee;
+    color: #111;
+    border-color: #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    z-index: 10; /* Bring to front */
+}
+
+/* --- BRANDING COLORS --- */
+/* Simple colored accents or backgrounds */
+.netflix { border-bottom: 6px solid #E50914; }
+.youtube { border-bottom: 6px solid #FF0000; }
+.prime   { border-bottom: 6px solid #00A8E1; }
+.jellyfin{ border-bottom: 6px solid #aa5cc3; }
+.moonlight { border-bottom: 6px solid #fff; }
+
+/* Optional: Add icons if you have them, otherwise text is fine */
+.icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
