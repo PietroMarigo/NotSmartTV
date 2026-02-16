@@ -52,6 +52,7 @@ button:active {
 .down { grid-column: 2; grid-row: 3; }
 .back { grid-column: 1; grid-row: 1; }
 .home { grid-column: 3; grid-row: 1; }
+.close { grid-column: 1; grid_row: 3; }
 
 /* --- MOUSE ZONE (Bottom) --- */
 .mouse-zone {

@@ -55,3 +55,12 @@ async def system_home():
         return {"status": "forward"}
     except Exception as e:
         return {"status": "error", "messege": f"{e}"}
+
+
+@app.post("/system/close")
+async def close_all():
+    try:
+        requests.post("http://localhost:8002/select/launch/close", timeout=1)
+        return {"status": "forward"}
+    except Exception as e:
+        return {"status": "error", "messege": f"{e}"}

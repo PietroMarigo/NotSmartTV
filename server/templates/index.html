@@ -16,7 +16,7 @@
 			<button class="enter btn-red" onclick="send('enter')">OK</button>
 			<button class="right" onclick="send('right')">▶</button>
 
-			<div class="spacer"></div>
+			<button class="close btn-gray" onclick="closeAll()">X</button>
 			<button class="down" onclick="send('down')">▼</button>
 			<div class="spacer"></div>
 		</div>
@@ -52,45 +52,52 @@
 						} catch (err) { console.error("Home error:", err); }
 					}
 					
-					// --- 3. WEBSOCKET LOGIC ---
-					let ws;
-					function connect() {
-						ws = new WebSocket(WS_URL);
-						ws.onclose = () => {
-							console.log("Disconnected, retrying...");
-							setTimeout(connect, 1000); // Fixed: actually calls connect
-							};
-							ws.onerror = (err) => console.error("WS Error:", err);
+					async function closeAll() {
+						try {
+							if(window.event) window.event.preventDefault();
+							await fetch(`${API_BASE}/control/system/close`, {method: 'POST'});
+							} catch (err) { console.error("Close error:", err); }
 						}
-						connect();
 						
-						// --- 4. TRACKPAD LOGIC ---
-						let lastX = 0, lastY = 0;
-						const SENSITIVITY = 2.2;
-						const trackpad = document.getElementById('trackpad');
-						
-						trackpad.addEventListener('touchstart', (e) => {
-							lastX = e.touches[0].clientX;
-							lastY = e.touches[0].clientY;
-							}, { passive: false });
+						// --- 3. WEBSOCKET LOGIC ---
+						let ws;
+						function connect() {
+							ws = new WebSocket(WS_URL);
+							ws.onclose = () => {
+								console.log("Disconnected, retrying...");
+								setTimeout(connect, 1000); // Fixed: actually calls connect
+								};
+								ws.onerror = (err) => console.error("WS Error:", err);
+							}
+							connect();
 							
-							trackpad.addEventListener('touchmove', (e) => {
-								e.preventDefault();
-								if (!ws || ws.readyState !== WebSocket.OPEN) return;
-								
-								const curX = e.touches[0].clientX;
-								const curY = e.touches[0].clientY;
-								
-								// Fixed: consistency in variable casing
-								const dX = Math.round((curX - lastX) * SENSITIVITY);
-								const dY = Math.round((curY - lastY) * SENSITIVITY);
-								
-								if (dX !== 0 || dY !== 0) {
-									ws.send(`${dX},${dY}`); // Backticks here!
-								}
-								lastX = curX;
-								lastY = curY;
+							// --- 4. TRACKPAD LOGIC ---
+							let lastX = 0, lastY = 0;
+							const SENSITIVITY = 2.2;
+							const trackpad = document.getElementById('trackpad');
+							
+							trackpad.addEventListener('touchstart', (e) => {
+								lastX = e.touches[0].clientX;
+								lastY = e.touches[0].clientY;
 								}, { passive: false });
+								
+								trackpad.addEventListener('touchmove', (e) => {
+									e.preventDefault();
+									if (!ws || ws.readyState !== WebSocket.OPEN) return;
+									
+									const curX = e.touches[0].clientX;
+									const curY = e.touches[0].clientY;
+									
+									// Fixed: consistency in variable casing
+									const dX = Math.round((curX - lastX) * SENSITIVITY);
+									const dY = Math.round((curY - lastY) * SENSITIVITY);
+									
+									if (dX !== 0 || dY !== 0) {
+										ws.send(`${dX},${dY}`); // Backticks here!
+									}
+									lastX = curX;
+									lastY = curY;
+									}, { passive: false });
 		</script>
 	</body>
 </html>

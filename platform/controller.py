@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from launcher import select_app, Apps
+from launcher import select_app, Apps, close_apps
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -17,6 +17,11 @@ async def dashboard(request: Request):
         "app_list": Apps.keys(),
     }
     return templates.TemplateResponse("tv.html", context)
+
+
+@app.post("/launch/close")
+async def close_all():
+    close_apps()
 
 
 @app.post("/launch/{app_name}")
